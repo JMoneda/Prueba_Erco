@@ -1,0 +1,56 @@
+# Environment variables
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Keep example file
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+*.log
+postgres_data/
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Distribution
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12

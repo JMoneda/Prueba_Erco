@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERCO Energy Monitor - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ ERCO Energy Monitor</h1>
+            <div class="status-indicator">
+                <span id="connection-status" class="status-dot"></span>
+                <span id="connection-text">Conectando...</span>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <!-- Panel de Alertas -->
+            <section class="panel alerts-panel">
+                <h2>🚨 Alertas en Tiempo Real</h2>
+                <div id="alerts-container" class="alerts-list">
+                    <p class="no-alerts">No hay alertas activas</p>
+                </div>
+            </section>
+
+            <!-- Panel de Dispositivos -->
+            <section class="panel devices-panel">
+                <h2>📊 Estado de Dispositivos</h2>
+                <div id="devices-grid" class="devices-grid">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </section>
+
+            <!-- Panel de Estadísticas -->
+            <section class="panel stats-panel">
+                <h2>📈 Calidad de Datos (24h)</h2>
+                <canvas id="quality-chart"></canvas>
+                <div id="stats-summary" class="stats-summary">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </section>
+
+            <!-- Panel de Registros Recientes -->
+            <section class="panel records-panel">
+                <h2>📝 Registros Recientes</h2>
+                <div class="filters">
+                    <select id="device-filter">
+                        <option value="">Todos los dispositivos</option>
+                    </select>
+                    <select id="classification-filter">
+                        <option value="">Todas las clasificaciones</option>
+                        <option value="valid">Válidos</option>
+                        <option value="uncertain">Inciertos</option>
+                        <option value="quarantine">Cuarentena</option>
+                    </select>
+                </div>
+                <div id="records-table" class="records-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dispositivo</th>
+                                <th>Timestamp</th>
+                                <th>Valor</th>
+                                <th>Delta</th>
+                                <th>Clasificación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-tbody">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    
+</body>
+</html>

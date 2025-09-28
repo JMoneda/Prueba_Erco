@@ -1,0 +1,419 @@
+/* Estilos modernos y profesionales para ERCO Energy Monitor */
+
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --bg-color: #f3f4f6;
+    --panel-bg: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 20px 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #fbbf24;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.connected {
+    background-color: #10b981;
+}
+
+.status-dot.disconnected {
+    background-color: #ef4444;
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+}
+
+.panel {
+    background: var(--panel-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.panel h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+/* Alertas */
+.alerts-panel {
+    grid-column: span 2;
+}
+
+.alerts-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.alert-item {
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border-left: 4px solid;
+    background: #fafafa;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alert-item.critical {
+    border-left-color: var(--danger-color);
+    background: #fee2e2;
+}
+
+.alert-item.warning {
+    border-left-color: var(--warning-color);
+    background: #fef3c7;
+}
+
+.alert-item.info {
+    border-left-color: var(--primary-color);
+    background: #dbeafe;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.alert-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.alert-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.alert-message {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.no-alerts {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px;
+}
+
+/* Dispositivos */
+.devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.device-card {
+    padding: 15px;
+    border-radius: 8px;
+    background: #fafafa;
+    border: 2px solid var(--border-color);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.device-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.device-card.normal {
+    border-color: var(--secondary-color);
+    background: #d1fae5;
+}
+
+.device-card.warning {
+    border-color: var(--warning-color);
+    background: #fed7aa;
+}
+
+.device-card.critical {
+    border-color: var(--danger-color);
+    background: #fecaca;
+}
+
+.device-card.offline {
+    border-color: var(--text-secondary);
+    background: #e5e7eb;
+    opacity: 0.7;
+}
+
+.device-code {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.device-status {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.device-value {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 10px;
+    color: var(--primary-color);
+}
+
+/* Estadísticas */
+.stats-panel {
+    grid-column: span 1;
+    max-height: 500px; /* Limitar altura máxima */
+}
+
+#quality-chart {
+    max-height: 300px !important; /* Forzar altura máxima */
+    width: 100% !important;
+}
+
+.panel stats-panel canvas {
+    max-height: 300px !important;
+}
+
+.stats-summary {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Registros */
+.records-panel {
+    grid-column: span 2;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.filters select {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.filters select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.records-table {
+    overflow-x: auto;
+}
+
+.records-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.records-table th {
+    text-align: left;
+    padding: 10px;
+    background: #f9fafb;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.records-table td {
+    padding: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.records-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.classification-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.classification-badge.valid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.classification-badge.uncertain {
+    background: #fed7aa;
+    color: #92400e;
+}
+
+.classification-badge.quarantine {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+    
+    .alerts-panel, .records-panel {
+        grid-column: span 1;
+    }
+    
+    header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .devices-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Loading spinner */
+.spinner {
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    background-color: var(--text-primary);
+    color: white;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
