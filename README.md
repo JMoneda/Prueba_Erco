@@ -49,7 +49,7 @@ Base de datos: localhost:5432
 └─────────────┘     └─────────────┘     └─────────────┘
 │                     │
 └──── WebSocket ──────┘
-
+```
 ### Stack Tecnológico:
 
 Backend: FastAPI + SQLAlchemy + PostgreSQL
@@ -250,7 +250,7 @@ Desarrollado para ERCO Energy como prueba técnica de Desarrollador Fullstack co
 Tiempo de desarrollo: 5 días
 Funcionalidades: 100% de requerimientos cumplidos
 
-```
+
 ## 🔄 **Flujo de Datos Detallado**
 ```mermaid
 graph TD
