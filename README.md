@@ -212,7 +212,7 @@ Desarrollado para ERCO Energy como prueba técnica de Desarrollador Fullstack co
 Tiempo de desarrollo: 5 días
 Funcionalidades: 100% de requerimientos cumplidos
 
-
+```
 ## 🔄 **FLUJO DE DATOS Y COMPONENTES**
 ```mermaid
 graph TD
