@@ -215,7 +215,6 @@ Funcionalidades: 100% de requerimientos cumplidos
 
 ## 🔄 **FLUJO DE DATOS Y COMPONENTES**
 ```markdown
-```mermaid
 graph TD
     A[simulator.py] -->|Genera datos| B[validators.py]
     B -->|Clasifica| C[models.py]
