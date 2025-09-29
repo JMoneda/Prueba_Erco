@@ -213,19 +213,6 @@ Tiempo de desarrollo: 5 días
 Funcionalidades: 100% de requerimientos cumplidos
 
 ```
-## 🔄 **FLUJO DE DATOS Y COMPONENTES**
-```mermaid
-graph TD
-    A[simulator.py] -->|Genera datos| B[validators.py]
-    B -->|Clasifica| C[models.py]
-    C -->|Almacena| D[PostgreSQL]
-    B -->|Detecta anomalías| E[alerts.py]
-    E -->|WebSocket| F[frontend/app.js]
-    F -->|Muestra| G[Dashboard HTML]
-    D -->|Consultas| H[02_views.sql]
-    H -->|Estadísticas| B
-```
-
 ## 🔄 **Flujo de Datos Detallado**
 ```mermaid
 graph TD
