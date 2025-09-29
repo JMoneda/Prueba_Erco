@@ -214,6 +214,7 @@ Funcionalidades: 100% de requerimientos cumplidos
 
 
 ## 🔄 **FLUJO DE DATOS Y COMPONENTES**
+```markdown
 ```mermaid
 graph TD
     A[simulator.py] -->|Genera datos| B[validators.py]
@@ -226,8 +227,6 @@ graph TD
     H -->|Estadísticas| B
 
 
-    ```markdown
-```mermaid
 graph TD
     A[🔄 simulator.py<br/>Simulador Solar] -->|Genera datos<br/>cada 15min| B[✅ validators.py<br/>Validador]
     B -->|Clasifica<br/>valid/uncertain/quarantine| C[📊 models.py<br/>Modelos BD]
@@ -248,8 +247,6 @@ graph TD
     style H fill:#e3f2fd,stroke:#0d47a1,stroke-width:2px
 
     
-```markdown
-```mermaid
 graph TB
     subgraph "🎯 Simulación y Validación"
         A[simulator.py]
