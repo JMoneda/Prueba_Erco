@@ -9,32 +9,32 @@ Sistema de monitoreo en tiempo real para inversores solares con validación auto
 - Git
 - Puertos 80, 8000 y 5432 disponibles
 
-### Instalación
+## Instalación
 
-# Clonar repositorio
+### Clonar repositorio
 git clone https://github.com/JMoneda/Prueba_Erco.git
 
-# Ubicarse en la raíz del proyecto
+### Ubicarse en la raíz del proyecto
 cd ruta/erco-energy-monitor
 
-# Generar SECRET_KEY y configurar en variables
+### Generar SECRET_KEY y configurar en variables
 python scripts/generate_secret.py
 
-# Dar permisos y ejecutar setup
+### Dar permisos y ejecutar setup
 chmod +x scripts/setup.sh
 ./scripts/setup.sh
 
-# EJECUTAR DE FORMA MANUAL
+## EJECUTAR DE FORMA MANUAL
 
-# Configurar variables de entorno
+### Configurar variables de entorno
 .env.example 
 .env
 ### Editar .env y configurar DB_PASSWORD y SECRET_KEY
 
-# Iniciar aplicación
+### Iniciar aplicación
 docker-compose up -d --build
 
-# Verificar estado
+### Verificar estado
 docker-compose ps
 
 Dashboard(Frontend): http://localhost
@@ -50,14 +50,14 @@ Base de datos: localhost:5432
 │                     │
 └──── WebSocket ──────┘
 
-# Stack Tecnológico:
+### Stack Tecnológico:
 
 Backend: FastAPI + SQLAlchemy + PostgreSQL
 Frontend: HTML5 + JavaScript + Chart.js
 Real-time: WebSockets
 Infraestructura: Docker + Nginx
 
-# 🎯 CARACTERÍSTICAS CLAVE DE LA ARQUITECTURA
+### 🎯 CARACTERÍSTICAS CLAVE DE LA ARQUITECTURA
 ✅ Backend (FastAPI)
 
 config.py: Configuración centralizada y validada
@@ -83,7 +83,7 @@ Containerización: Docker para portabilidad
 Automatización: Scripts de setup y configuración
 Documentación: README completo y comentarios en código
 
-# 📊 Funcionalidades
+### 📊 Funcionalidades
 ✅ Validación de Datos
 
 Válido: Dentro de rangos históricos normales(valid)
@@ -106,29 +106,66 @@ Panel de alertas activas
 
 🔧 Configuración
 Variables de Entorno Principales
-bashDB_PASSWORD=tu_password_seguro
+DB_PASSWORD=tu_password_seguro
 SECRET_KEY=tu_clave_secreta
 SIMULATION_ENABLED=true
 TOLERANCE_PERCENTAGE=10
 Generar SECRET_KEY
-bashpython scripts/generate_secret.py
+python scripts/generate_secret.py
 
 🧪 Pruebas
 Casos de Error Incluidos
 Ver logs de simulación
 docker-compose logs -f backend
 
-# Datos con errores intencionados:
-# - 2% delta negativo (fallas)
-# - 2% valores congelados  
-# - 1% saltos atípicos
-API Testing
-Ingesta manual de datos
+## Datos con errores intencionados:
+### - 2% delta negativo (fallas)
+### - 2% valores congelados  
+### - 1% saltos atípicos
+
+### Forzar Errores Manualmente via API
+🔴 Delta Negativo (Falla de inversor):
+Registro normal
 curl -X POST http://localhost:8000/api/devices/1/ingest \
   -H "Content-Type: application/json" \
-  -d '{"value": 2550.5, "timestamp": "2025-09-28T17:00:00"}'
+  -d '{"value": 1500.0, "timestamp": "2025-09-28T10:00:00"}'
 
-# Ver estadísticas de calidad
+### Registro con delta negativo (ERROR)
+curl -X POST http://localhost:8000/api/devices/1/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"value": 1450.0, "timestamp": "2025-09-28T10:15:00"}'
+
+### 🟡 Valor Congelado:
+Enviar el mismo valor 4 veces seguidas
+for i in {1..4}; do
+  curl -X POST http://localhost:8000/api/devices/1/ingest \
+    -H "Content-Type: application/json" \
+    -d "{\"value\": 2000.0, \"timestamp\": \"2025-09-28T1${i}:00:00\"}"
+
+### 🟠 Salto Atípico:
+Valor normal
+curl -X POST http://localhost:8000/api/devices/2/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"value": 1800.0, "timestamp": "2025-09-28T12:00:00"}'
+
+### Salto anormal (ERROR)
+curl -X POST http://localhost:8000/api/devices/2/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"value": 4500.0, "timestamp": "2025-09-28T12:15:00"}'
+
+### Verificar Resultados de Errores
+Ver alertas generadas:
+curl http://localhost:8000/api/alerts?resolved=false | jq
+Ver registros clasificados como problemáticos:
+Solo registros en cuarentena
+curl "http://localhost:8000/api/devices/1/records?classification=quarantine" | jq
+
+### Solo registros inciertos
+curl "http://localhost:8000/api/devices/1/records?classification=uncertain" | jq
+Ver estadísticas de calidad:
+curl http://localhost:8000/api/statistics/quality | jq
+
+### Ver estadísticas de calidad
 curl http://localhost:8000/api/statistics/quality
 
 ```markdown
@@ -167,48 +204,48 @@ erco-energy-monitor/
 └── 🛠️ scripts/               # Herramientas de desarrollo
 ├── 🔐 generate_secret.py   # Generador de claves criptográficas
 └── 🚀 setup.sh            # Script de instalación automática
-
-# 🐛 Troubleshooting
+```
+### 🐛 Troubleshooting
 Problemas Comunes
 Error de conexión a BD
 docker-compose logs postgres
 
-# Error de permisos
+### Error de permisos
 sudo chown -R $USER:$USER postgres_data/
 
-# Reiniciar servicios
+### Reiniciar servicios
 docker-compose restart
 
-# Limpiar y rebuilds
+### Limpiar y rebuilds
 docker-compose down -v
 docker-compose up -d --build
 
-# Logs Útiles
+### Logs Útiles
 Ver todos los logs
 docker-compose logs -f
 
-# Solo backend
+### Solo backend
 docker-compose logs -f backend
 
-# Solo base de datos
+### Solo base de datos
 docker-compose logs -f postgres
 
 📊 Monitoreo
-# Métricas Disponibles
+## Métricas Disponibles
 
 /api/health - Estado del sistema
 /api/statistics/quality - Calidad de datos
 /api/devices - Estado de dispositivos
 /api/alerts - Alertas activas
 
-# Performance
+### Performance
 
 Vistas materializadas para consultas históricas
 Índices optimizados en tablas principales
 Pool de conexiones PostgreSQL
 WebSockets para updates en tiempo real
 
-👥 Desarrollo
+### 👥 Desarrollo
 Desarrollado para ERCO Energy como prueba técnica de Desarrollador Fullstack con énfasis en Backend.
 Tiempo de desarrollo: 5 días
 Funcionalidades: 100% de requerimientos cumplidos
