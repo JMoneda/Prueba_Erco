@@ -246,36 +246,3 @@ graph TD
     style F fill:#fff8e1
     style G fill:#f1f8e9
     style H fill:#e3f2fd
-```
-
-```mermaid    
-graph TB
-    subgraph "🎯 Simulación y Validación"
-        A[simulator.py]
-        B[validators.py] 
-        A --> B
-    end
-    
-    subgraph "💾 Persistencia"
-        C[models.py]
-        D[PostgreSQL]
-        H[vistas materializadas]
-        C --> D
-        D --> H
-        H --> B
-    end
-    
-    subgraph "🚨 Alertas"
-        E[alerts.py]
-        B --> E
-    end
-    
-    subgraph "🌐 Frontend"
-        F[app.js]
-        G[Dashboard]
-        E --> F
-        F --> G
-    end
-    
-    B --> C
-    ```
