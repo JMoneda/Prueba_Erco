@@ -29,7 +29,7 @@ chmod +x scripts/setup.sh
 # Configurar variables de entorno
 .env.example 
 .env
-# Editar .env y configurar DB_PASSWORD y SECRET_KEY
+### Editar .env y configurar DB_PASSWORD y SECRET_KEY
 
 # Iniciar aplicación
 docker-compose up -d --build
