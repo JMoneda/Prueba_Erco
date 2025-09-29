@@ -40,13 +40,15 @@ Dashboard(Frontend): http://localhost
 API Docs(Backend): http://localhost:8000/docs
 Base de datos: localhost:5432
 
-🏗️ Arquitectura
+```markdown
+## 🏗️ Arquitectura
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Frontend  │────▶│   Backend  │────▶│  PostgreSQL │
-│ (HTML+JS)   │◀────│  (FastAPI) │◀────│  (15-alpine)│
+│   Frontend  │────▶│   Backend   │────▶│  PostgreSQL │
+│ (HTML+JS)   │◀────│  (FastAPI)  │◀────│   (15-alpine)│
 └─────────────┘     └─────────────┘     └─────────────┘
-       │                     │
-       └──── WebSocket ──────┘
+│                     │
+└──── WebSocket ──────┘
+
 # Stack Tecnológico:
 
 Backend: FastAPI + SQLAlchemy + PostgreSQL
@@ -128,41 +130,42 @@ curl -X POST http://localhost:8000/api/devices/1/ingest \
 # Ver estadísticas de calidad
 curl http://localhost:8000/api/statistics/quality
 
-# 📁 Estructura del Proyecto
+```markdown
+## 📁 Estructura del Proyecto
 erco-energy-monitor/
-├── 📋 .env.example              # Configuración de variables de entorno
-├── 📋 .gitignore               # Archivos excluidos de Git
-├── 📋 README.md                # Documentación principal
-├── 🐳 docker-compose.yml       # Orquestación de contenedores
-├── 🌐 nginx.conf               # Configuración del servidor web
+├── 📋 .env.example              # Plantilla de configuración
+├── 📋 .gitignore               # Archivos excluidos del control de versión
+├── 📋 README.md                # Documentación principal del proyecto
+├── 🐳 docker-compose.yml       # Orquestación de servicios
+├── 🌐 nginx.conf               # Servidor web para frontend
 │
-├── 🔧 backend/                 # API Backend (FastAPI + Python)
-│   ├── 🐳 Dockerfile           # Imagen Docker del backend
+├── 🔧 backend/                 # API Backend (FastAPI + Python 3.11)
+│   ├── 🐳 Dockerfile           # Imagen Docker optimizada
 │   ├── 📦 requirements.txt     # Dependencias Python
-│   └── 📂 app/                 # Código fuente de la aplicación
-│       ├── 📄 __init__.py      # Módulo Python
-│       ├── ⚙️ config.py        # Configuración centralizada (BD, API, etc.)
-│       ├── 🗄️ database.py      # Gestión de conexiones a PostgreSQL
-│       ├── 📊 models.py        # Modelos SQLAlchemy (tablas, relaciones)
-│       ├── ✅ validators.py    # Lógica de validación de datos
+│   └── 📂 app/                 # Código fuente principal
+│       ├── 📄 init.py      # Inicialización del módulo
+│       ├── ⚙️ config.py        # Configuración y variables de entorno
+│       ├── 🗄️ database.py      # Pool de conexiones PostgreSQL
+│       ├── 📊 models.py        # Modelos de datos (tablas, relaciones)
+│       ├── ✅ validators.py    # Lógica de validación automática
 │       ├── 🔄 simulator.py     # Simulador de datos solares realistas
 │       ├── 🚨 alerts.py        # Sistema de alertas en tiempo real
-│       └── 🚀 main.py          # API principal con endpoints y WebSockets
+│       └── 🚀 main.py          # API REST + WebSockets
 │
-├── 🗄️ database/               # Scripts de Base de Datos (PostgreSQL)
-│   ├── 📊 01_schema.sql        # Estructura completa (tablas, índices, triggers)
-│   ├── 📈 02_views.sql         # Vistas materializadas y funciones
-│   └── 🌱 03_seed.sql          # Datos iniciales y poblado de prueba
+├── 🗄️ database/               # Scripts PostgreSQL
+│   ├── 📊 01_schema.sql        # Tablas, índices, constraints, triggers
+│   ├── 📈 02_views.sql         # Vistas materializadas para performance
+│   └── 🌱 03_seed.sql          # Datos de prueba y poblado inicial
 │
-├── 🌐 frontend/               # Dashboard Web (HTML5 + JavaScript)
-│   ├── 🏠 index.html          # Página principal del dashboard
-│   ├── ⚙️ config.js           # Configuración del frontend (URLs, intervalos)
-│   ├── 💻 app.js              # Lógica principal (WebSockets, API calls, UI)
-│   └── 🎨 style.css           # Estilos CSS modernos y responsive
+├── 🌐 frontend/               # Dashboard Web (Vanilla JavaScript)
+│   ├── 🏠 index.html          # Interfaz principal responsive
+│   ├── ⚙️ config.js           # Configuración URLs y parámetros
+│   ├── 💻 app.js              # Cliente WebSocket + API calls
+│   └── 🎨 style.css           # Estilos modernos con CSS Grid
 │
-└── 🛠️ scripts/               # Utilidades y herramientas
-    ├── 🔐 generate_secret.py   # Generador de claves SECRET_KEY seguras
-    └── 🚀 setup.sh            # Script de instalación automatizada
+└── 🛠️ scripts/               # Herramientas de desarrollo
+├── 🔐 generate_secret.py   # Generador de claves criptográficas
+└── 🚀 setup.sh            # Script de instalación automática
 
 # 🐛 Troubleshooting
 Problemas Comunes
@@ -221,3 +224,58 @@ graph TD
     F -->|Muestra| G[Dashboard HTML]
     D -->|Consultas| H[02_views.sql]
     H -->|Estadísticas| B
+
+
+    ```markdown
+```mermaid
+graph TD
+    A[🔄 simulator.py<br/>Simulador Solar] -->|Genera datos<br/>cada 15min| B[✅ validators.py<br/>Validador]
+    B -->|Clasifica<br/>valid/uncertain/quarantine| C[📊 models.py<br/>Modelos BD]
+    C -->|Almacena en<br/>raw_records| D[🗄️ PostgreSQL<br/>Base de Datos]
+    B -->|Detecta anomalías<br/>3+ cuarentena| E[🚨 alerts.py<br/>Sistema Alertas]
+    E -->|Notificación<br/>tiempo real| F[💻 frontend/app.js<br/>Cliente Web]
+    F -->|Renderiza en| G[🌐 Dashboard HTML<br/>Interfaz Usuario]
+    D -->|Consultas<br/>históricas| H[📈 02_views.sql<br/>Vistas Materializadas]
+    H -->|Estadísticas<br/>últimos 7 días| B
+    
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style B fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style C fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style D fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    style E fill:#ffebee,stroke:#b71c1c,stroke-width:2px
+    style F fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    style G fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    style H fill:#e3f2fd,stroke:#0d47a1,stroke-width:2px
+
+    
+```markdown
+```mermaid
+graph TB
+    subgraph "🎯 Simulación y Validación"
+        A[simulator.py]
+        B[validators.py] 
+        A --> B
+    end
+    
+    subgraph "💾 Persistencia"
+        C[models.py]
+        D[PostgreSQL]
+        H[vistas materializadas]
+        C --> D
+        D --> H
+        H --> B
+    end
+    
+    subgraph "🚨 Alertas"
+        E[alerts.py]
+        B --> E
+    end
+    
+    subgraph "🌐 Frontend"
+        F[app.js]
+        G[Dashboard]
+        E --> F
+        F --> G
+    end
+    
+    B --> C
