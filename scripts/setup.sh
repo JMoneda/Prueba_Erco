@@ -1,61 +1,85 @@
 #!/bin/bash
+set -e  # Salir si hay errores
 
-echo "🚀 Configuración inicial de ERCO Energy Monitor"
-echo "=============================================="
+echo "🚀 ERCO Energy Monitor - Instalación Automática"
+echo "================================================"
 
-# Verificar si existe .env
+# Verificar prerrequisitos
+echo "🔍 Verificando prerrequisitos..."
+
+if ! command -v docker &> /dev/null; then
+    echo "❌ Docker no está instalado."
+    echo "   Instalar desde: https://docs.docker.com/get-docker/"
+    exit 1
+fi
+
+if ! command -v docker-compose &> /dev/null; then
+    echo "❌ Docker Compose no está instalado."
+    echo "   Instalar desde: https://docs.docker.com/compose/install/"
+    exit 1
+fi
+
+echo "✅ Docker y Docker Compose encontrados"
+
+# Configurar .env
 if [ ! -f .env ]; then
-    echo "📝 Creando archivo .env desde .env.example..."
+    echo "📝 Creando archivo .env..."
     cp .env.example .env
-    
-    echo "⚠️  Por favor, edita el archivo .env con tus credenciales:"
-    echo "   - DB_PASSWORD: Configura una contraseña segura"
-    echo "   - SECRET_KEY: Genera una con 'python scripts/generate_secret.py'"
+    echo ""
+    echo "⚠️  IMPORTANTE: Configura las siguientes variables en .env:"
+    echo "   - DB_PASSWORD (contraseña segura para PostgreSQL)"
+    echo "   - SECRET_KEY (ejecuta: python scripts/generate_secret.py)"
     echo ""
     read -p "Presiona Enter cuando hayas configurado .env..."
 else
     echo "✅ Archivo .env encontrado"
 fi
 
-# Verificar Docker
-if ! command -v docker &> /dev/null; then
-    echo "❌ Docker no está instalado. Por favor, instálalo primero."
-    exit 1
+# Verificar puertos
+echo "🔍 Verificando puertos disponibles..."
+if lsof -Pi :80 -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "⚠️  Puerto 80 en uso. El frontend podría no iniciarse correctamente."
 fi
 
-echo "✅ Docker está instalado"
-
-# Verificar Docker Compose
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ Docker Compose no está instalado. Por favor, instálalo primero."
-    exit 1
+if lsof -Pi :8000 -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "⚠️  Puerto 8000 en uso. El backend podría no iniciarse correctamente."
 fi
 
-echo "✅ Docker Compose está instalado"
+# Construir e iniciar
+echo "🔨 Construyendo aplicación..."
+docker-compose build --no-cache
 
-# Construir contenedores
-echo "🔨 Construyendo contenedores..."
-docker-compose build
-
-# Iniciar servicios
 echo "🚀 Iniciando servicios..."
 docker-compose up -d
 
-# Esperar a que la base de datos esté lista
-echo "⏳ Esperando a que PostgreSQL esté listo..."
-sleep 10
+# Esperar a que PostgreSQL esté listo
+echo "⏳ Esperando a que PostgreSQL inicialice..."
+sleep 15
 
 # Verificar estado
-echo "📊 Verificando estado de los servicios..."
+echo "📊 Estado de los servicios:"
 docker-compose ps
 
+# Verificar salud
+echo "🏥 Verificando salud del sistema..."
+sleep 5
+
+if curl -s http://localhost:8000/api/health >/dev/null 2>&1; then
+    echo "✅ Backend funcionando correctamente"
+else
+    echo "⚠️  Backend podría tener problemas. Verificar logs:"
+    echo "   docker-compose logs backend"
+fi
+
 echo ""
-echo "✅ Configuración completada!"
+echo "🎉 ¡Instalación completada!"
 echo ""
-echo "🌐 Accede a la aplicación en:"
-echo "   - Frontend: http://localhost"
-echo "   - API: http://localhost:8000"
-echo "   - API Docs: http://localhost:8000/docs"
+echo "📊 Acceder a la aplicación:"
+echo "   🌐 Dashboard: http://localhost"
+echo "   📡 API Docs:  http://localhost:8000/docs"
+echo "   💾 PostgreSQL: localhost:5432"
 echo ""
-echo "📝 Para ver los logs:"
-echo "   docker-compose logs -f"
+echo "📝 Comandos útiles:"
+echo "   Ver logs:     docker-compose logs -f"
+echo "   Detener:      docker-compose down"
+echo "   Reiniciar:    docker-compose restart"

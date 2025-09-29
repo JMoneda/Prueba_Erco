@@ -21,7 +21,8 @@ class Config:
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
-    # Configuración de base de datos
+    # Configuración de base de datos 
+    # En producción, usar variables de entorno seguras o un gestor de secretos
     DB_HOST: str = os.getenv("DB_HOST", "localhost")
     DB_PORT: int = int(os.getenv("DB_PORT", "5432"))
     DB_NAME: str = os.getenv("DB_NAME", "erco_energy")
@@ -55,12 +56,7 @@ class Config:
     
     # Configuración de alertas
     ALERT_CHECK_INTERVAL: int = int(os.getenv("ALERT_CHECK_INTERVAL", "60"))  # segundos
-    
-    # Configuración de Redis (opcional)
-    REDIS_HOST: Optional[str] = os.getenv("REDIS_HOST")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
-    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
-    
+         
     # Timezone
     TIMEZONE: str = os.getenv("TZ", "America/Bogota")
     

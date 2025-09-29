@@ -5,8 +5,11 @@
 
 class ERCOMonitor {
     constructor() {
-        this.apiUrl = 'http://localhost:8000';
-        this.wsUrl = 'ws://localhost:8000/ws/alerts';
+        // USAR CONFIGURACIÓN CENTRALIZADA
+        this.apiUrl = window.APP_CONFIG.API_URL;
+        this.wsUrl = window.APP_CONFIG.WS_URL;
+        this.debug = window.APP_CONFIG.DEBUG;
+        
         this.ws = null;
         this.devices = [];
         this.alerts = [];
@@ -16,7 +19,11 @@ class ERCOMonitor {
     }
 
     async init() {
-        console.log('Inicializando ERCO Energy Monitor...');
+        if (this.debug) {
+            console.log('🚀 Inicializando ERCO Energy Monitor...');
+            console.log('📡 API URL:', this.apiUrl);
+            console.log('🔌 WebSocket URL:', this.wsUrl);
+        }
         
         // Conectar WebSocket para alertas en tiempo real
         this.connectWebSocket();
@@ -26,50 +33,51 @@ class ERCOMonitor {
         await this.loadAlerts();
         await this.loadQualityStats();
         
-        // Configurar actualización periódica
-        setInterval(() => this.updateDashboard(), 15000); // Cada 15 segundos
+        // USAR CONFIGURACIÓN PARA INTERVALO
+        setInterval(() => this.updateDashboard(), window.APP_CONFIG.REFRESH_INTERVAL);
         
         // Configurar event listeners
         this.setupEventListeners();
     }
 
     connectWebSocket() {
-        // Establecer conexión WebSocket para alertas en tiempo real
+        // USAR URL DE CONFIGURACIÓN
         this.ws = new WebSocket(this.wsUrl);
         
         this.ws.onopen = () => {
-            console.log('WebSocket conectado');
+            if (this.debug) console.log('✅ WebSocket conectado');
             this.updateConnectionStatus(true);
             
-            // Enviar ping cada 30 segundos para mantener conexión
+            // USAR CONFIGURACIÓN PARA PING INTERVAL
             setInterval(() => {
                 if (this.ws.readyState === WebSocket.OPEN) {
                     this.ws.send('ping');
+                    if (this.debug) console.log('📤 Ping enviado');
                 }
-            }, 30000);
+            }, window.APP_CONFIG.PING_INTERVAL);
         };
         
         this.ws.onmessage = (event) => {
             const data = event.data;
             
-            // CORRECCIÓN: Verificar si es 'pong' antes de parsear JSON
+            // Verificar si es 'pong' antes de parsear JSON
             if (data === 'pong') {
-                console.log('Pong recibido');
+                if (this.debug) console.log('📥 Pong recibido');
                 return;
             }
             
             try {
                 // Es una alerta
                 const alert = JSON.parse(data);
-                console.log('Nueva alerta recibida:', alert);
+                if (this.debug) console.log('🚨 Nueva alerta recibida:', alert);
                 this.handleNewAlert(alert);
             } catch (e) {
-                console.error('Error parseando mensaje WebSocket:', e, data);
+                console.error('❌ Error parseando mensaje WebSocket:', e, data);
             }
         };
         
         this.ws.onclose = () => {
-            console.log('WebSocket desconectado');
+            if (this.debug) console.log('❌ WebSocket desconectado');
             this.updateConnectionStatus(false);
             
             // Reconectar después de 5 segundos
@@ -77,27 +85,17 @@ class ERCOMonitor {
         };
         
         this.ws.onerror = (error) => {
-            console.error('Error WebSocket:', error);
+            console.error('❌ Error WebSocket:', error);
         };
-    }
-
-    updateConnectionStatus(connected) {
-        const statusDot = document.getElementById('connection-status');
-        const statusText = document.getElementById('connection-text');
-        
-        if (connected) {
-            statusDot.className = 'status-dot connected';
-            statusText.textContent = 'Conectado';
-        } else {
-            statusDot.className = 'status-dot disconnected';
-            statusText.textContent = 'Desconectado';
-        }
     }
 
     async loadDevices() {
         try {
+            // USAR URL DE CONFIGURACIÓN
             const response = await fetch(`${this.apiUrl}/api/devices`);
             this.devices = await response.json();
+            
+            if (this.debug) console.log('📱 Dispositivos cargados:', this.devices.length);
             
             // Actualizar selector de dispositivos
             this.updateDeviceFilter();
@@ -106,7 +104,7 @@ class ERCOMonitor {
             await this.updateDevicesStatus();
             
         } catch (error) {
-            console.error('Error cargando dispositivos:', error);
+            console.error('❌ Error cargando dispositivos:', error);
         }
     }
 
@@ -114,18 +112,17 @@ class ERCOMonitor {
         const devicesGrid = document.getElementById('devices-grid');
         devicesGrid.innerHTML = '';
         
-        // CORRECCIÓN: Solo procesar dispositivos activos que existen
         for (const device of this.devices) {
             try {
+                // USAR URL DE CONFIGURACIÓN
                 const response = await fetch(`${this.apiUrl}/api/devices/${device.id}/status`);
                 
                 if (response.ok) {
                     const status = await response.json();
-                    // Crear tarjeta de dispositivo
                     const card = this.createDeviceCard(status);
                     devicesGrid.appendChild(card);
                 } else if (response.status === 404) {
-                    // Dispositivo no tiene estado aún (sin registros)
+                    // Dispositivo no tiene estado aún
                     const card = this.createDeviceCard({
                         device_id: device.id,
                         device_code: device.device_code,
@@ -139,39 +136,22 @@ class ERCOMonitor {
                     devicesGrid.appendChild(card);
                 }
             } catch (error) {
-                console.error(`Error obteniendo estado del dispositivo ${device.id}:`, error);
+                console.error(`❌ Error obteniendo estado del dispositivo ${device.id}:`, error);
             }
         }
     }
 
-    createDeviceCard(status) {
-        const card = document.createElement('div');
-        // CORRECCIÓN: Verificar que status existe antes de usar toUpperCase
-        const deviceStatus = status.status || 'unknown';
-        card.className = `device-card ${deviceStatus.toLowerCase()}`;
-        
-        const lastValue = status.accumulated_value ? status.accumulated_value.toFixed(2) : 'N/A';
-        const deltaValue = status.delta_value ? `Δ ${status.delta_value.toFixed(2)}` : '';
-        
-        card.innerHTML = `
-            <div class="device-code">${status.device_code}</div>
-            <div class="device-status">${deviceStatus.toUpperCase()}</div>
-            <div class="device-value">${lastValue} kWh</div>
-            <div class="device-status">${deltaValue}</div>
-        `;
-        
-        return card;
-    }
-
     async loadAlerts() {
         try {
+            // USAR URL DE CONFIGURACIÓN
             const response = await fetch(`${this.apiUrl}/api/alerts?resolved=false`);
             this.alerts = await response.json();
             
+            if (this.debug) console.log('🚨 Alertas cargadas:', this.alerts.length);
             this.updateAlertsDisplay();
             
         } catch (error) {
-            console.error('Error cargando alertas:', error);
+            console.error('❌ Error cargando alertas:', error);
         }
     }
 
@@ -185,40 +165,11 @@ class ERCOMonitor {
         
         container.innerHTML = '';
         
-        // Mostrar últimas 10 alertas
-        this.alerts.slice(0, 10).forEach(alert => {
+        // USAR CONFIGURACIÓN PARA LÍMITE
+        this.alerts.slice(0, window.APP_CONFIG.MAX_ALERTS_DISPLAY).forEach(alert => {
             const alertElement = this.createAlertElement(alert);
             container.appendChild(alertElement);
         });
-    }
-
-    createAlertElement(alert) {
-        const div = document.createElement('div');
-        div.className = `alert-item ${alert.severity}`;
-        
-        const time = new Date(alert.created_at).toLocaleTimeString();
-        
-        div.innerHTML = `
-            <div class="alert-header">
-                <span class="alert-title">${alert.device_code} - ${this.getAlertTypeLabel(alert.alert_type)}</span>
-                <span class="alert-time">${time}</span>
-            </div>
-            <div class="alert-message">${alert.message}</div>
-        `;
-        
-        // Click para resolver alerta
-        div.addEventListener('click', () => this.resolveAlert(alert.id));
-        
-        return div;
-    }
-
-    getAlertTypeLabel(type) {
-        const labels = {
-            'consecutive_quarantine': 'Cuarentena Consecutiva',
-            'negative_delta': 'Delta Negativo',
-            'frozen_value': 'Valor Congelado'
-        };
-        return labels[type] || type;
     }
 
     handleNewAlert(alert) {
@@ -228,9 +179,9 @@ class ERCOMonitor {
         // Actualizar display
         this.updateAlertsDisplay();
         
-        // Mostrar notificación del navegador si está permitido
+        // USAR CONFIGURACIÓN PARA NOMBRE DE APP
         if (Notification.permission === 'granted') {
-            new Notification('ERCO Energy Monitor', {
+            new Notification(window.APP_CONFIG.APP_NAME, {
                 body: alert.message,
                 icon: '⚡'
             });
@@ -240,47 +191,27 @@ class ERCOMonitor {
         this.playAlertSound();
     }
 
-    playAlertSound() {
-        // Crear sonido simple con Web Audio API
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch (e) {
-            console.log('No se pudo reproducir sonido:', e);
-        }
-    }
-
     async resolveAlert(alertId) {
         try {
+            // USAR URL DE CONFIGURACIÓN
             const response = await fetch(`${this.apiUrl}/api/alerts/${alertId}/resolve`, {
                 method: 'PUT'
             });
             
             if (response.ok) {
-                // Remover de la lista
                 this.alerts = this.alerts.filter(a => a.id !== alertId);
                 this.updateAlertsDisplay();
+                if (this.debug) console.log('✅ Alerta resuelta:', alertId);
             }
             
         } catch (error) {
-            console.error('Error resolviendo alerta:', error);
+            console.error('❌ Error resolviendo alerta:', error);
         }
     }
 
     async loadQualityStats() {
         try {
+            // USAR URL DE CONFIGURACIÓN
             const response = await fetch(`${this.apiUrl}/api/statistics/quality`);
             const stats = await response.json();
             
@@ -288,14 +219,14 @@ class ERCOMonitor {
             this.updateStatsSummary(stats);
             
         } catch (error) {
-            console.error('Error cargando estadísticas:', error);
+            console.error('❌ Error cargando estadísticas:', error);
         }
     }
 
     updateQualityChart(stats) {
         const ctx = document.getElementById('quality-chart').getContext('2d');
         
-        // CORRECCIÓN: Destruir chart anterior si existe
+        // Destruir chart anterior si existe
         if (this.qualityChart) {
             this.qualityChart.destroy();
             this.qualityChart = null;
@@ -307,7 +238,7 @@ class ERCOMonitor {
         const uncertainData = stats.map(s => s.uncertain_count);
         const quarantineData = stats.map(s => s.quarantine_count);
         
-        // Crear chart con configuración correcta
+        // USAR COLORES DE CONFIGURACIÓN
         this.qualityChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -316,79 +247,40 @@ class ERCOMonitor {
                     {
                         label: 'Válidos',
                         data: validData,
-                        backgroundColor: '#10b981'
+                        backgroundColor: window.APP_CONFIG.CHART_COLORS.valid
                     },
                     {
                         label: 'Inciertos',
                         data: uncertainData,
-                        backgroundColor: '#f59e0b'
+                        backgroundColor: window.APP_CONFIG.CHART_COLORS.uncertain
                     },
                     {
                         label: 'Cuarentena',
                         data: quarantineData,
-                        backgroundColor: '#ef4444'
+                        backgroundColor: window.APP_CONFIG.CHART_COLORS.quarantine
                     }
                 ]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true, // CORRECCIÓN: Mantener proporción
-                aspectRatio: 2, // CORRECCIÓN: Proporción fija
+                maintainAspectRatio: true,
+                aspectRatio: 2,
                 scales: {
-                    x: {
-                        stacked: true
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true
-                    }
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true }
                 },
                 plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
+                    legend: { position: 'bottom' }
                 }
             }
         });
-    }
-
-    updateStatsSummary(stats) {
-        const container = document.getElementById('stats-summary');
-        
-        // Calcular totales
-        const totals = stats.reduce((acc, s) => {
-            acc.valid += s.valid_count;
-            acc.uncertain += s.uncertain_count;
-            acc.quarantine += s.quarantine_count;
-            acc.total += s.total_count;
-            return acc;
-        }, { valid: 0, uncertain: 0, quarantine: 0, total: 0 });
-        
-        const validityPercentage = totals.total > 0 
-            ? (totals.valid / totals.total * 100).toFixed(1) 
-            : 0;
-        
-        container.innerHTML = `
-            <div class="stat-item">
-                <div class="stat-label">Total Válidos</div>
-                <div class="stat-value" style="color: #10b981">${totals.valid}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Total Inciertos</div>
-                <div class="stat-value" style="color: #f59e0b">${totals.uncertain}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">% validez</div>
-                <div class="stat-value">${validityPercentage}%</div>
-            </div>
-        `;
     }
 
     async loadRecords() {
         const deviceFilter = document.getElementById('device-filter').value;
         const classificationFilter = document.getElementById('classification-filter').value;
         
-        // Construir URL con filtros
+        // USAR URL DE CONFIGURACIÓN
         let url = `${this.apiUrl}/api/devices/`;
         if (deviceFilter) {
             url += `${deviceFilter}/records?hours=24`;
@@ -396,7 +288,6 @@ class ERCOMonitor {
                 url += `&classification=${classificationFilter}`;
             }
         } else {
-            // Si no hay dispositivo seleccionado, mostrar mensaje
             document.getElementById('records-tbody').innerHTML = 
                 '<tr><td colspan="5" style="text-align: center">Seleccione un dispositivo</td></tr>';
             return;
@@ -408,12 +299,12 @@ class ERCOMonitor {
                 const records = await response.json();
                 this.updateRecordsTable(records, deviceFilter);
             } else {
-                console.error('Error obteniendo registros:', response.status);
+                console.error('❌ Error obteniendo registros:', response.status);
                 document.getElementById('records-tbody').innerHTML = 
                     '<tr><td colspan="5" style="text-align: center; color: red">Error cargando registros</td></tr>';
             }
         } catch (error) {
-            console.error('Error cargando registros:', error);
+            console.error('❌ Error cargando registros:', error);
         }
     }
 
@@ -425,9 +316,8 @@ class ERCOMonitor {
         const device = this.devices.find(d => d.id == deviceId);
         const deviceName = device ? device.device_code : 'Desconocido';
         
-        // CORRECCIÓN: Verificar que records es un array
         if (!Array.isArray(records)) {
-            console.error('Records no es un array:', records);
+            console.error('❌ Records no es un array:', records);
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red">Error: datos inválidos</td></tr>';
             return;
         }
@@ -437,8 +327,8 @@ class ERCOMonitor {
             return;
         }
         
-        // Mostrar últimos 20 registros
-        records.slice(0, 20).forEach(record => {
+        // USAR CONFIGURACIÓN PARA LÍMITE
+        records.slice(0, window.APP_CONFIG.MAX_RECENT_RECORDS).forEach(record => {
             const row = document.createElement('tr');
             
             const timestamp = new Date(record.timestamp).toLocaleString();
@@ -461,10 +351,87 @@ class ERCOMonitor {
         });
     }
 
+    createDeviceCard(status) {
+        const card = document.createElement('div');
+        const deviceStatus = status.status || 'unknown';
+        card.className = `device-card ${deviceStatus.toLowerCase()}`;
+        
+        const lastValue = status.accumulated_value ? status.accumulated_value.toFixed(2) : 'N/A';
+        const deltaValue = status.delta_value ? `Δ ${status.delta_value.toFixed(2)}` : '';
+        
+        card.innerHTML = `
+            <div class="device-code">${status.device_code}</div>
+            <div class="device-status">${deviceStatus.toUpperCase()}</div>
+            <div class="device-value">${lastValue} kWh</div>
+            <div class="device-status">${deltaValue}</div>
+        `;
+        
+        return card;
+    }
+
+    createAlertElement(alert) {
+        const div = document.createElement('div');
+        div.className = `alert-item ${alert.severity}`;
+        
+        const time = new Date(alert.created_at).toLocaleTimeString();
+        
+        div.innerHTML = `
+            <div class="alert-header">
+                <span class="alert-title">${alert.device_code} - ${this.getAlertTypeLabel(alert.alert_type)}</span>
+                <span class="alert-time">${time}</span>
+            </div>
+            <div class="alert-message">${alert.message}</div>
+        `;
+        
+        div.addEventListener('click', () => this.resolveAlert(alert.id));
+        return div;
+    }
+
+    getAlertTypeLabel(type) {
+        const labels = {
+            'consecutive_quarantine': 'Cuarentena Consecutiva',
+            'negative_delta': 'Delta Negativo',
+            'frozen_value': 'Valor Congelado'
+        };
+        return labels[type] || type;
+    }
+
+    playAlertSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (e) {
+            if (this.debug) console.log('🔇 No se pudo reproducir sonido:', e);
+        }
+    }
+
+    updateConnectionStatus(connected) {
+        const statusDot = document.getElementById('connection-status');
+        const statusText = document.getElementById('connection-text');
+        
+        if (connected) {
+            statusDot.className = 'status-dot connected';
+            statusText.textContent = 'Conectado';
+        } else {
+            statusDot.className = 'status-dot disconnected';
+            statusText.textContent = 'Desconectado';
+        }
+    }
+
     updateDeviceFilter() {
         const select = document.getElementById('device-filter');
-        
-        // Mantener selección actual
         const currentValue = select.value;
         
         select.innerHTML = '<option value="">Todos los dispositivos</option>';
@@ -476,8 +443,38 @@ class ERCOMonitor {
             select.appendChild(option);
         });
         
-        // Restaurar selección
         select.value = currentValue;
+    }
+
+    updateStatsSummary(stats) {
+        const container = document.getElementById('stats-summary');
+        
+        const totals = stats.reduce((acc, s) => {
+            acc.valid += s.valid_count;
+            acc.uncertain += s.uncertain_count;
+            acc.quarantine += s.quarantine_count;
+            acc.total += s.total_count;
+            return acc;
+        }, { valid: 0, uncertain: 0, quarantine: 0, total: 0 });
+        
+        const validityPercentage = totals.total > 0 
+            ? (totals.valid / totals.total * 100).toFixed(1) 
+            : 0;
+        
+        container.innerHTML = `
+            <div class="stat-item">
+                <div class="stat-label">Total Válidos</div>
+                <div class="stat-value" style="color: ${window.APP_CONFIG.CHART_COLORS.valid}">${totals.valid}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Inciertos</div>
+                <div class="stat-value" style="color: ${window.APP_CONFIG.CHART_COLORS.uncertain}">${totals.uncertain}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">% Validez</div>
+                <div class="stat-value">${validityPercentage}%</div>
+            </div>
+        `;
     }
 
     setupEventListeners() {
@@ -497,6 +494,8 @@ class ERCOMonitor {
     }
 
     async updateDashboard() {
+        if (this.debug) console.log('🔄 Actualizando dashboard...');
+        
         // Actualizar componentes del dashboard
         await this.updateDevicesStatus();
         await this.loadQualityStats();
