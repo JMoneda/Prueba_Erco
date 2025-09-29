@@ -24,7 +24,8 @@ python scripts/generate_secret.py
 chmod +x scripts/setup.sh
 ./scripts/setup.sh
 
-### MANUAL
+# EJECUTAR DE FORMA MANUAL
+
 # Configurar variables de entorno
 .env.example 
 .env
